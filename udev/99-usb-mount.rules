@@ -1,0 +1,8 @@
+# Auto-mount USB storage devices for pi-robot-video
+#
+# Mounts any USB-attached block partition (ext4 or vfat) to /media/usb.
+# Uses sd[b-z] to skip sda (often the built-in SD card reader).
+
+ACTION=="add", SUBSYSTEM=="block", KERNEL=="sd[b-z][0-9]", ENV{ID_BUS}=="usb", ENV{ID_FS_TYPE}=="ext4|vfat|ntfs|exfat", RUN+="/usr/bin/systemd-mount --no-block --automount=no --collect $devnode /media/usb"
+
+ACTION=="remove", SUBSYSTEM=="block", KERNEL=="sd[b-z][0-9]", ENV{ID_BUS}=="usb", RUN+="/usr/bin/systemd-umount /media/usb"

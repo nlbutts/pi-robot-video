@@ -1,0 +1,21 @@
+[Unit]
+Description=Pi Robot Video Player
+After=multi-user.target
+Wants=multi-user.target
+
+[Service]
+Type=simple
+User=robots
+Restart=always
+RestartSec=5
+WorkingDirectory=__PROJECT_DIR__
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/python3 -u src/main.py
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=TERM=linux
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
