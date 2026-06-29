@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 VALID_EXTENSIONS = {".mkv", ".mp4"}
-MAX_BUTTON = 24
+MAX_BUTTON = 17
 
 
 class USBScanner:

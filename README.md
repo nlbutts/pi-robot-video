@@ -1,49 +1,42 @@
 # pi-robot-video
 
-A Raspberry Pi video player that responds to 24 physical button inputs.
+A Raspberry Pi video player that responds to 17 physical button inputs.
 Each button maps to a video file on a USB stick.
 
 ## Hardware
 
 - Raspberry Pi 3 (or newer) connected to an HDMI monitor
-- 24 momentary buttons wired from GPIO pins to GND
+- 17 momentary buttons wired from GPIO pins to GND
 - USB memory stick for video storage
 
 ### GPIO Wiring
 
-| Button | BCM Pin | Physical Pin |
-|--------|---------|-------------|
-| 1 | 5 | 29 |
-| 2 | 6 | 31 |
-| 3 | 12 | 32 |
-| 4 | 13 | 33 |
-| 5 | 16 | 36 |
-| 6 | 17 | 11 |
-| 7 | 22 | 15 |
-| 8 | 23 | 16 |
-| 9 | 24 | 18 |
-| 10 | 25 | 22 |
-| 11 | 26 | 37 |
-| 12 | 27 | 13 |
-| 13 | 4 | 7 |
-| 14 | 7 | 26 |
-| 15 | 8 | 24 |
-| 16 | 9 | 21 |
-| 17 | 10 | 19 |
-| 18 | 11 | 23 |
-| 19 | 18 | 12 |
-| 20 | 19 | 35 |
-| 21 | 20 | 38 |
-| 22 | 21 | 40 |
-| 23 | 14 | 8 |
-| 24 | 15 | 10 |
+| Button | BCM Pin |
+|--------|---------|
+| 1 | 4 |
+| 2 | 27 |
+| 3 | 21 |
+| 4 | 13 |
+| 5 | 26 |
+| 6 | 23 |
+| 7 | 22 |
+| 8 | 12 |
+| 9 | 20 |
+| 10 | 19 |
+| 11 | 24 |
+| 12 | 25 |
+| 13 | 5 | 
+| 14 | 6 | 
+| 15 | 16 | 
+| 16 | 17 | 
+| 17 | 18 |
 
 Each button connects its GPIO pin to a GND pin (e.g., 6, 9, 14, 20, 25, 30, 34, 39).
 The internal pull-up resistor keeps the pin HIGH; pressing the button pulls it LOW.
 
 ## Video Files
 
-Place video files on a USB stick with the naming convention `01.mkv` through `24.mkv`
+Place video files on a USB stick with the naming convention `01.mkv` through `17.mkv`
 (or `.mp4`). The file number corresponds to the button number.
 
 ```
@@ -52,7 +45,7 @@ USB_ROOT/
   02.mp4
   03.mkv
   ...
-  24.mp4
+  17.mp4
 ```
 
 For best performance on the Pi 3, encode videos as **H.264** in an `.mp4` or `.mkv`
@@ -68,6 +61,14 @@ container. Higher-bitrate or non-H.264 codecs may struggle with software decodin
 - If a button has no matching video file on the USB stick, the press is ignored.
 - Plug in or remove the USB stick at any time; videos are rescanned every 2 seconds.
 
+## Testing video playback
+
+Test a video on the display from the command line:
+
+```bash
+WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/1000 cvlc --fullscreen --no-osd --play-and-exit /media/usb/01.mp4
+```
+
 ## Installation
 
 On the Raspberry Pi, clone this repo into the home directory:
@@ -80,23 +81,33 @@ chmod +x scripts/install.sh
 ```
 
 The install script:
-1. Installs system packages (`vlc`, `python3-pip`, `python3-gpiozero`)
+1. Installs system packages (`vlc`, `python3-pip`, `python3-gpiozero`, `exfatprogs`)
 2. Installs `python-vlc` via pip
-3. Installs and enables a systemd user service
-4. Enables linger so the service starts at boot
+3. Installs a udev rule to auto-mount USB drives to `/media/usb`
+4. Enables auto-login via `raspi-config`
+5. Creates the `/run/user` runtime directory if needed
 
-After installation, enable auto-login via `sudo raspi-config`:
-- System Options → Boot / Auto Login → Desktop Autologin
+After installation, reboot and the video player starts automatically via the desktop autologin.
 
-Reboot, and the video player starts automatically.
+## Deployment
 
-### Manual control
+Deploy the code to the Raspberry Pi using `rsync` or `scp`:
 
 ```bash
-systemctl --user start pi-video.service
-systemctl --user stop pi-video.service
-systemctl --user status pi-video.service
-journalctl --user -u pi-video.service -f
+# Using rsync (recommended):
+rsync -avz ~/pi-robot-video/ robots@pi:~/pi-robot-video/
+
+# Using scp:
+scp -r ~/pi-robot-video robots@pi:~/
+```
+
+Target: `robots@pi` (password: `robots`). The directory is copied to `~/pi-robot-video` on the Pi.
+
+Run the player manually:
+
+```bash
+cd ~/pi-robot-video
+python3 src/main.py
 ```
 
 ## Testing without GPIO
@@ -111,12 +122,12 @@ Edit `src/config.py` to change:
 - **MEDIA_PATH** — base path to scan for USB media (default `/media`)
 - **SPLASH_PATH** — path to the splash screen image
 - **DEBOUNCE_MS** — button debounce time in milliseconds
-- **VLC_OPTIONS** — additional VLC command-line options
+- **SCAN_INTERVAL** — seconds between USB media scans
 
 ## Requirements
 
-- Raspberry Pi OS Bookworm (Desktop or Lite)
+- Raspberry Pi OS Bookworm (Desktop)
 - Python 3.9+
 - VLC media player
-- gpiozero (pre-installed on Pi OS)
 - python-vlc
+- gpiozero (pre-installed on Pi OS)

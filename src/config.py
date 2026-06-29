@@ -2,10 +2,7 @@ import os
 
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BUTTON_PINS = [
-    5, 6, 12, 13, 16, 17, 22, 23, 24, 25, 26, 27,
-    4, 7, 8, 9, 10, 11, 18, 19, 20, 21, 14, 15,
-]
+BUTTON_PINS = [4, 27, 21, 13, 26, 23, 22, 12, 20, 19, 24, 25, 5, 6, 16, 17, 18]
 
 MEDIA_PATH = "/media"
 

@@ -16,6 +16,7 @@ class VideoPlayer:
         self._queue_video = None
         self._is_playing = False
         self._current_button = None
+        self._ending = False
         self._end_reached = threading.Event()
 
         self._instance = vlc.Instance(*self._vlc_options)
@@ -30,12 +31,16 @@ class VideoPlayer:
         if not os.path.isfile(self._splash_path):
             logger.warning("Splash image not found: %s", self._splash_path)
             return
+        self._ending = True
+        self._player.stop()
+        self._end_reached.clear()
         media = self._instance.media_new(self._splash_path)
         media.add_option("image-duration=-1")
         self._player.set_media(media)
         self._player.play()
         self._is_playing = False
         self._current_button = None
+        self._ending = False
         logger.info("Splash displayed")
 
     def press_button(self, button_num):
@@ -81,18 +86,23 @@ class VideoPlayer:
             logger.warning("Video file missing: %s", path)
             return
 
+        self._ending = True
         self._player.stop()
+        self._end_reached.clear()
         media = self._instance.media_new(path)
         self._player.set_media(media)
         self._player.play()
         self._is_playing = True
         self._current_button = button_num
         self._queue_video = None
+        self._ending = False
         logger.info("Playing video %d: %s", button_num, os.path.basename(path))
 
     def _on_video_end(self, event):
-        self._end_reached.set()
+        if not self._ending:
+            self._end_reached.set()
 
     def _on_video_error(self, event):
-        logger.warning("VLC error — returning to splash")
-        self._end_reached.set()
+        if not self._ending:
+            logger.warning("VLC error — returning to splash")
+            self._end_reached.set()

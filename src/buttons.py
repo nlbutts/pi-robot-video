@@ -38,7 +38,7 @@ class ButtonHandler:
                 self._buttons.append(btn)
             except GPIODeviceError as exc:
                 logger.error("Failed to init GPIO %d: %s", pin, exc)
-        logger.info("Button handler started: %d buttons on GPIO (3.3V wiring, pull_up=False)", len(self._buttons))
+        logger.info("Button handler started: %d buttons on GPIO (pull-down wiring)", len(self._buttons))
 
     def stop(self):
         if self._mock:

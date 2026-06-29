@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PI_IP="192.168.1.225"
+PI_IP="pi"
 PI_USER="robots"
 PI_PASS="robots"
 PI_HOME="/home/${PI_USER}"
